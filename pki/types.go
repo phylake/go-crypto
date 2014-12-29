@@ -11,12 +11,12 @@ type PublicKey rsa.PublicKey
 type PrivateKey rsa.PrivateKey
 
 type EncryptionBlock struct {
-	encryptedSymmetricKey string
-	blob                  []byte
+	EncryptedSymmetricKey string
+	EncryptedBlob         []byte
 }
 
 type EncryptionStream struct {
-	encryptedSymmetricKey string
+	EncryptedSymmetricKey string
 
 	fileLocal  io.ReadCloser
 	fileRemote io.Reader

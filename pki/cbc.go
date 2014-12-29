@@ -13,7 +13,7 @@ func (recv *PublicKey) EncryptCBC(inBytes []byte) (EncryptionBlock, error) {
 		return EncryptionBlock{}, err
 	}
 
-	encryptedSymmetricKey, err := recv.EncryptOAEP(symmetricKey)
+	EncryptedSymmetricKey, err := recv.EncryptOAEP(symmetricKey)
 	if err != nil {
 		return EncryptionBlock{}, err
 	}
@@ -43,13 +43,13 @@ func (recv *PublicKey) EncryptCBC(inBytes []byte) (EncryptionBlock, error) {
 	cfb.CryptBlocks(ciphertext[aes.BlockSize:], inBytes)
 
 	result := EncryptionBlock{
-		encryptedSymmetricKey: encryptedSymmetricKey,
-		blob: ciphertext}
+		EncryptedSymmetricKey: EncryptedSymmetricKey,
+		EncryptedBlob:         ciphertext}
 	return result, nil
 }
 
 func (recv *PrivateKey) DecryptCBC(bundle EncryptionBlock) ([]byte, error) {
-	symmetricKey, err := recv.DecryptOAEP(bundle.encryptedSymmetricKey)
+	symmetricKey, err := recv.DecryptOAEP(bundle.EncryptedSymmetricKey)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +60,7 @@ func (recv *PrivateKey) DecryptCBC(bundle EncryptionBlock) ([]byte, error) {
 	}
 
 	var blob []byte
-	blob = bundle.blob
+	blob = bundle.EncryptedBlob
 	initializationVector := blob[:aes.BlockSize]
 	blob = blob[aes.BlockSize:]
 	cfb := cipher.NewCBCDecrypter(block, initializationVector)
