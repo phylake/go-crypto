@@ -17,9 +17,11 @@ import (
 )
 
 func main() {
-    rsaKey := generateKey()
-    // or use your own
-    // rsaKey, _ := pki.ParsePrivateKey([]byte(my1024BitPrivateKey))
+    // use your own private key
+    rsaKey, _ := pki.ParsePrivateKey([]byte(my768BitPrivateKey))
+    
+    // or generate one
+    // rsaKey := generateKey()
 
     privateKey := pki.PrivateKey(*rsaKey)
     publicKey := pki.PublicKey(rsaKey.PublicKey)
