@@ -30,12 +30,11 @@ func main() {
         panic(err)
     }
 
-    // a randomly generated key (K) that's been that's been encrypted with your
+    // a randomly generated key (K) that's been encrypted with your public key
     // and base64-encoded
     fmt.Println(encBlock.EncryptedSymmetricKey)
 
-    // your data encrypted using a randomly generated key as input to the
-    // AES-256 block cipher in CBC mode
+    // your data encrypted using the key K
     fmt.Println(encBlock.EncryptedBlob)
 
     // decrypt and print the original file
@@ -56,22 +55,18 @@ func generateKey() *rsa.PrivateKey {
 }
 
 // checkout https://gist.github.com/phylake/7392335 for relevant OpenSSL commands
-var my1024BitPrivateKey string = `-----BEGIN RSA PRIVATE KEY-----
-MIICXAIBAAKBgQC9LZm1sJyNhzngpksZANJlctbX1pyuTiBYGCilexQjNBkXIF5W
-qfsTFdxj/8dJ4vMZ+eJd1QONJQTdmSZL6+0BvcbLnrzNVMck+tBS4tYOQ2qUMsh7
-MjmXbq2sjTCz0zF8vsu6YCtJukmRNfrw82mX5YcY6aNU52TZpHd3SXljMQIDAQAB
-AoGAOWz8OfEQtM2VviH8rexX8b+4g/B7w1Wn79X1kLYZ2M3Zx/Flcb1Ln/GE4z4j
-isQ/s2TtWDpvR4szPOlefLFzUgunoaKXln1f3j2lWsoPBcMTjye7CfCy4fOpt27T
-2zxvBmZ1+RJFOrGjGAvPr2+7WHJcuiUr9w1RQqE76gFLrAECQQD0bzr1qm/zihqE
-/YaUvSC0Parn8Ult3OfG0OAO8P6xQFZyAu9fH5ev14SwoRnuGNHmV4ZUQabyLJEV
-x1JUWP0RAkEAxiEQhBk481BL8J30pD1SUObuWIelvRgDV+3zbOLMXmtPQM/m+fbc
-wIiFV3dlHnMuQj1i8l2i0sE6PdfQX0SEIQJAOa4ZwqjyfAzFz0YoQOcUVZQLxWnp
-wvQS+ZaGmOADqf4dqA/LPq4s1EDOPgP2I3pV5b4Xo8BOTe14WyRK6D6LkQJBALzt
-OI+OcZTqg49tP6QBaWYF30+CAdP/eui02UOCPPjoAMm/tfOzp6rcQ7I1ArJ3iKvX
-V2vfR+0KHlxsV6EQd6ECQDwV4RnZ8VI02XIpWfBABsQyXDyEcTOe+OvGmEUaTA3Z
-RDAdfMAPcBg1kMCDBFRue0oET9BTNQjoVuOSgt/W5vQ=
+var my768BitPrivateKey string = `-----BEGIN RSA PRIVATE KEY-----
+MIIBywIBAAJhAMWE5scMDOpfDvgkKKSkstniJG0YaNNbP2GpsS9342JA9Y1GuJl2
+rl1OptLwPnzzbz29uXmJxLGYFhL0aT3IEKKKVuoBvxJTbkied7E8cxxF13ywXmqo
+sD7pEL4pKv3MQQIDAQABAmEApvlExjvPp0mYs/iNSzHX6A0eUgNyikn2+K6lFMW6
+uVLEwhto7oK/wC0/Jc7mZGa8w4T0dU1jtxmjct3Q/0rk0IaqZYGZuA+K/bElZS8J
+u8SMHJhuXXAGJ5EoaVLJSYfhAjEA9zhWMG4XAMTOIvcRoYF2JQkMX5kgrDZCBqnG
+7qeo2i8oKFSQ1wIBz+rkVxjZwKrNAjEAzIiyR/Z+u3AGN/A9BHTKzscPgUAUZX+I
+9o2t4AztB8Xuze24+lwc/fZ09KqXxM9FAjEAxW8tjiHtpwSFp/DvGK+enfc69YIC
+UOZIFrAyGli1hgIRLRxUTBHjRpxN3a0QAkmlAjBRX8lebCl7tVQkCUadcUIHBpea
+mr4Cq7z4KuIUk8/yGcOq1nuTz/YQ7G8XsI91U+kCMAqV1ex5pJyLaBYyNsdyUOZn
+eGf4LKiCsykmr8pdheWPFApbhp1Wi2MmeqGTgpjWsg==
 -----END RSA PRIVATE KEY-----`
-
 ```
 
 ## Notable implementation details
