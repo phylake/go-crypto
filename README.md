@@ -1,4 +1,3 @@
-go-crypto
-=========
+# go-crypto [![Build Status](https://travis-ci.org/phylake/go-crypto.svg?branch=master)](https://travis-ci.org/phylake/go-crypto)
 
-AES CBC CTR OAEP
+Go utilities for common tasks asked about around the internet
