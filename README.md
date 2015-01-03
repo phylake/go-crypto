@@ -73,4 +73,3 @@ eGf4LKiCsykmr8pdheWPFApbhp1Wi2MmeqGTgpjWsg==
 
 ## Notable implementation details
 - The only cipher used is 256 bit AES.
-- The CBC block cipher mode is OpenSSL (aes-256-cbc) compatible. Both use SHA1 as the hash function.

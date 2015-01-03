@@ -31,12 +31,12 @@ func Test_OAEP_Documentation(t *testing.T) {
 	shouldSucceed := make([]byte, 86)
 	shouldFail := make([]byte, 87)
 
-	pubS3FS := PublicKey(rsaKey.PublicKey)
+	publicKey := PublicKey(rsaKey.PublicKey)
 
-	_, err = pubS3FS.EncryptOAEP(shouldSucceed)
+	_, err = publicKey.EncryptOAEP(shouldSucceed)
 	assert.Nil(t, err)
 
-	_, err = pubS3FS.EncryptOAEP(shouldFail)
+	_, err = publicKey.EncryptOAEP(shouldFail)
 	assert.NotNil(t, err)
 }
 
@@ -48,13 +48,13 @@ func Test_OAEP_Bijection(t *testing.T) {
 
 	msg := []byte("symmetric key")
 
-	pkS3FS := PrivateKey(*rsaKey)
-	pubS3FS := PublicKey(rsaKey.PublicKey)
+	privateKey := PrivateKey(*rsaKey)
+	publicKey := PublicKey(rsaKey.PublicKey)
 
-	encMsg, err := pubS3FS.EncryptOAEP(msg)
+	encMsg, err := publicKey.EncryptOAEP(msg)
 	assert.Nil(t, err)
 
-	msg2, err := pkS3FS.DecryptOAEP(encMsg)
+	msg2, err := privateKey.DecryptOAEP(encMsg)
 	assert.Nil(t, err)
 	assert.Equal(t, msg, msg2)
 }
@@ -85,9 +85,9 @@ func Test_Go_OAEP_OpenSSL_Combatibility(t *testing.T) {
 	// encrypt a message
 	// -------------------------------------------------------------------------
 	msg := []byte("symmetric key")
-	pkS3FS := PublicKey(pk.PublicKey)
+	privateKey := PublicKey(pk.PublicKey)
 
-	encryptedMsg, err := pkS3FS.EncryptOAEP(msg)
+	encryptedMsg, err := privateKey.EncryptOAEP(msg)
 	assert.Nil(t, err)
 	assert.NotNil(t, encryptedMsg)
 

@@ -7,7 +7,7 @@ import (
 	"encoding/base64"
 )
 
-// produce a base64-encoded RSA-OAEP compatible with OpenSSL
+// Produce a base64-encoded RSA-OAEP compatible with OpenSSL
 func (recv *PublicKey) EncryptOAEP(inBytes []byte) (string, error) {
 	key := rsa.PublicKey(*recv)
 	oaepBytes, err := rsa.EncryptOAEP(sha1.New(), rand.Reader, &key, inBytes, []byte(""))

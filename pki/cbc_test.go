@@ -14,8 +14,8 @@ func Test_CBC_Bijection(t *testing.T) {
 	rsaKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	assert.Nil(t, err)
 
-	pkS3FS := PrivateKey(*rsaKey)
-	pubS3FS := PublicKey(rsaKey.PublicKey)
+	privateKey := PrivateKey(*rsaKey)
+	publicKey := PublicKey(rsaKey.PublicKey)
 
 	var blobIn []byte
 	var blobOut []byte
@@ -26,10 +26,10 @@ func Test_CBC_Bijection(t *testing.T) {
 	_, err = rand.Reader.Read(blobIn)
 	assert.Nil(t, err)
 
-	encryptionBlock, err = pubS3FS.EncryptCBC(blobIn)
+	encryptionBlock, err = publicKey.EncryptCBC(blobIn)
 	assert.Nil(t, err)
 
-	blobOut, err = pkS3FS.DecryptCBC(encryptionBlock)
+	blobOut, err = privateKey.DecryptCBC(encryptionBlock)
 	assert.Nil(t, err)
 
 	assert.Equal(t, blobIn, blobOut)
@@ -39,10 +39,10 @@ func Test_CBC_Bijection(t *testing.T) {
 	_, err = rand.Reader.Read(blobIn)
 	assert.Nil(t, err)
 
-	encryptionBlock, err = pubS3FS.EncryptCBC(blobIn)
+	encryptionBlock, err = publicKey.EncryptCBC(blobIn)
 	assert.Nil(t, err)
 
-	blobOut, err = pkS3FS.DecryptCBC(encryptionBlock)
+	blobOut, err = privateKey.DecryptCBC(encryptionBlock)
 	assert.Nil(t, err)
 
 	assert.Equal(t, blobIn, blobOut)
@@ -52,10 +52,10 @@ func Test_CBC_Bijection(t *testing.T) {
 	_, err = rand.Reader.Read(blobIn)
 	assert.Nil(t, err)
 
-	encryptionBlock, err = pubS3FS.EncryptCBC(blobIn)
+	encryptionBlock, err = publicKey.EncryptCBC(blobIn)
 	assert.Nil(t, err)
 
-	blobOut, err = pkS3FS.DecryptCBC(encryptionBlock)
+	blobOut, err = privateKey.DecryptCBC(encryptionBlock)
 	assert.Nil(t, err)
 
 	assert.Equal(t, blobIn, blobOut)

@@ -6,14 +6,21 @@ import (
 	"crypto/rand"
 )
 
+type EncryptionBlock struct {
+	EncryptedSymmetricKey string
+	EncryptedBlob         []byte
+}
+
+// NOTE: the padding used here is custom meaning only an equivalent
+// implementation can decrypt this
 func (recv *PublicKey) EncryptCBC(inBytes []byte) (EncryptionBlock, error) {
-	symmetricKey := make([]byte, AESByteLen)
+	symmetricKey := make([]byte, AES256Bytes)
 	_, err := rand.Reader.Read(symmetricKey)
 	if err != nil {
 		return EncryptionBlock{}, err
 	}
 
-	EncryptedSymmetricKey, err := recv.EncryptOAEP(symmetricKey)
+	encryptedSymmetricKey, err := recv.EncryptOAEP(symmetricKey)
 	if err != nil {
 		return EncryptionBlock{}, err
 	}
@@ -25,6 +32,10 @@ func (recv *PublicKey) EncryptCBC(inBytes []byte) (EncryptionBlock, error) {
 
 	padLen := aes.BlockSize - len(inBytes)%aes.BlockSize
 	padding := make([]byte, padLen)
+	_, err = rand.Reader.Read(padding)
+	if err != nil {
+		return EncryptionBlock{}, err
+	}
 	padding[0] = byte(padLen)
 	inBytes = append(padding, inBytes...)
 	inBytesLen := len(inBytes)
@@ -43,7 +54,7 @@ func (recv *PublicKey) EncryptCBC(inBytes []byte) (EncryptionBlock, error) {
 	cfb.CryptBlocks(ciphertext[aes.BlockSize:], inBytes)
 
 	result := EncryptionBlock{
-		EncryptedSymmetricKey: EncryptedSymmetricKey,
+		EncryptedSymmetricKey: encryptedSymmetricKey,
 		EncryptedBlob:         ciphertext}
 	return result, nil
 }

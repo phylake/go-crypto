@@ -1,3 +1,3 @@
 package pki
 
-const AESByteLen int = 32 // 256 bit AES
+const AES256Bytes int = 32 // 256 bit AES
