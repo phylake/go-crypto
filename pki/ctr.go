@@ -8,7 +8,7 @@ import (
 )
 
 type ctrWriter struct {
-	unencryptedKey []byte
+	symmetricKey []byte
 
 	stream cipher.Stream
 
@@ -23,25 +23,25 @@ type ctrReader struct {
 	reader io.Reader
 }
 
-func NewCTRWriter(unencryptedKey []byte, encryptedData io.Writer) io.Writer {
+func NewCTRWriter(symmetricKey []byte, encryptedData io.Writer) io.Writer {
 	ret := &ctrWriter{}
-	ret.unencryptedKey = unencryptedKey
+	ret.symmetricKey = symmetricKey
 	ret.writer = encryptedData
 	return ret
 }
 
-func NewCTRReader(unencryptedKey []byte, unencryptedData io.Reader) (io.Reader, error) {
+func NewCTRReader(symmetricKey []byte, unencryptedData io.Reader) (io.Reader, error) {
 	iv := make([]byte, aes.BlockSize)
 	_, err := io.ReadFull(rand.Reader, iv)
 	if err != nil {
 		return nil, err
 	}
 
-	return newCTRReaderWithVector(unencryptedKey, unencryptedData, iv)
+	return newCTRReaderWithVector(symmetricKey, unencryptedData, iv)
 }
 
-func newCTRReaderWithVector(unencryptedKey []byte, unencryptedData io.Reader, iv []byte) (io.Reader, error) {
-	block, err := aes.NewCipher(unencryptedKey)
+func newCTRReaderWithVector(symmetricKey []byte, unencryptedData io.Reader, iv []byte) (io.Reader, error) {
+	block, err := aes.NewCipher(symmetricKey)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func (recv *ctrWriter) Write(p []byte) (n int, err error) {
 			return 0, io.ErrShortBuffer
 		}
 
-		block, err := aes.NewCipher(recv.unencryptedKey)
+		block, err := aes.NewCipher(recv.symmetricKey)
 		if err != nil {
 			return 0, err
 		}
@@ -90,9 +90,9 @@ func (recv *ctrReader) Read(p []byte) (n int, err error) {
 	}
 
 	p2 := make([]byte, len(p)-n)
-	n2, err2 := recv.reader.Read(p2)
-	if err2 != nil {
-		return n2, err2
+	n2, err := recv.reader.Read(p2)
+	if err != nil {
+		return n2, err
 	}
 
 	recv.stream.XORKeyStream(p[n:], p2)

@@ -6,77 +6,51 @@ import (
 	"crypto/rand"
 )
 
-type EncryptionBlock struct {
-	EncryptedSymmetricKey string
-	EncryptedBlob         []byte
-}
-
 // NOTE: the padding used here is custom meaning only an equivalent
 // implementation can decrypt this
-func (recv *PublicKey) EncryptCBC(inBytes []byte) (EncryptionBlock, error) {
-	symmetricKey := make([]byte, AES256Bytes)
-	_, err := rand.Reader.Read(symmetricKey)
-	if err != nil {
-		return EncryptionBlock{}, err
-	}
-
-	encryptedSymmetricKey, err := recv.EncryptOAEP(symmetricKey)
-	if err != nil {
-		return EncryptionBlock{}, err
-	}
-
+func EncryptCBC(symmetricKey []byte, inBytes []byte) ([]byte, error) {
 	block, err := aes.NewCipher(symmetricKey)
 	if err != nil {
-		return EncryptionBlock{}, err
+		return nil, err
 	}
 
 	padLen := aes.BlockSize - len(inBytes)%aes.BlockSize
 	padding := make([]byte, padLen)
 	_, err = rand.Reader.Read(padding)
 	if err != nil {
-		return EncryptionBlock{}, err
+		return nil, err
 	}
 	padding[0] = byte(padLen)
 	inBytes = append(padding, inBytes...)
 	inBytesLen := len(inBytes)
 	if inBytesLen%aes.BlockSize != 0 {
-		return EncryptionBlock{}, ErrCBCPad
+		return nil, ErrCBCPad
 	}
 
 	ciphertext := make([]byte, aes.BlockSize+inBytesLen)
 	initializationVector := ciphertext[:aes.BlockSize]
 	_, err = rand.Reader.Read(initializationVector)
 	if err != nil {
-		return EncryptionBlock{}, err
+		return nil, err
 	}
 
 	cfb := cipher.NewCBCEncrypter(block, initializationVector)
 	cfb.CryptBlocks(ciphertext[aes.BlockSize:], inBytes)
 
-	result := EncryptionBlock{
-		EncryptedSymmetricKey: encryptedSymmetricKey,
-		EncryptedBlob:         ciphertext}
-	return result, nil
+	return ciphertext, nil
 }
 
-func (recv *PrivateKey) DecryptCBC(bundle EncryptionBlock) ([]byte, error) {
-	symmetricKey, err := recv.DecryptOAEP(bundle.EncryptedSymmetricKey)
-	if err != nil {
-		return nil, err
-	}
-
+func DecryptCBC(symmetricKey []byte, inBytes []byte) ([]byte, error) {
 	block, err := aes.NewCipher(symmetricKey)
 	if err != nil {
 		return nil, err
 	}
 
-	var blob []byte
-	blob = bundle.EncryptedBlob
-	initializationVector := blob[:aes.BlockSize]
-	blob = blob[aes.BlockSize:]
+	initializationVector := inBytes[:aes.BlockSize]
+	inBytes = inBytes[aes.BlockSize:]
 	cfb := cipher.NewCBCDecrypter(block, initializationVector)
-	cfb.CryptBlocks(blob, blob)
-	padLen := uint8(blob[0])
-	blob = blob[padLen:]
-	return blob, nil
+	cfb.CryptBlocks(inBytes, inBytes)
+	padLen := uint8(inBytes[0])
+	inBytes = inBytes[padLen:]
+	return inBytes, nil
 }

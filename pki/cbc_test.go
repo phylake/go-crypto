@@ -3,7 +3,6 @@ package pki
 import (
 	"crypto/aes"
 	"crypto/rand"
-	"crypto/rsa"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -11,25 +10,23 @@ import (
 func Test_CBC_Bijection(t *testing.T) {
 	t.Parallel()
 
-	rsaKey, err := rsa.GenerateKey(rand.Reader, 1024)
-	assert.Nil(t, err)
-
-	privateKey := PrivateKey(*rsaKey)
-	publicKey := PublicKey(rsaKey.PublicKey)
-
 	var blobIn []byte
 	var blobOut []byte
-	var encryptionBlock EncryptionBlock
+	var blobEnc []byte
+	var err error
+
+	randomKey, err := RandomAES256Key()
+	assert.Nil(t, err)
 
 	// NO PADDING
 	blobIn = make([]byte, 96)
 	_, err = rand.Reader.Read(blobIn)
 	assert.Nil(t, err)
 
-	encryptionBlock, err = publicKey.EncryptCBC(blobIn)
+	blobEnc, err = EncryptCBC(randomKey, blobIn)
 	assert.Nil(t, err)
 
-	blobOut, err = privateKey.DecryptCBC(encryptionBlock)
+	blobOut, err = DecryptCBC(randomKey, blobEnc)
 	assert.Nil(t, err)
 
 	assert.Equal(t, blobIn, blobOut)
@@ -39,10 +36,10 @@ func Test_CBC_Bijection(t *testing.T) {
 	_, err = rand.Reader.Read(blobIn)
 	assert.Nil(t, err)
 
-	encryptionBlock, err = publicKey.EncryptCBC(blobIn)
+	blobEnc, err = EncryptCBC(randomKey, blobIn)
 	assert.Nil(t, err)
 
-	blobOut, err = privateKey.DecryptCBC(encryptionBlock)
+	blobOut, err = DecryptCBC(randomKey, blobEnc)
 	assert.Nil(t, err)
 
 	assert.Equal(t, blobIn, blobOut)
@@ -52,10 +49,10 @@ func Test_CBC_Bijection(t *testing.T) {
 	_, err = rand.Reader.Read(blobIn)
 	assert.Nil(t, err)
 
-	encryptionBlock, err = publicKey.EncryptCBC(blobIn)
+	blobEnc, err = EncryptCBC(randomKey, blobIn)
 	assert.Nil(t, err)
 
-	blobOut, err = privateKey.DecryptCBC(encryptionBlock)
+	blobOut, err = DecryptCBC(randomKey, blobEnc)
 	assert.Nil(t, err)
 
 	assert.Equal(t, blobIn, blobOut)

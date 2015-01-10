@@ -39,6 +39,33 @@ func Test_CTR_Bijection(t *testing.T) {
 	assert.Equal(t, plaintext1, plaintext2)
 }
 
+func TestCTRExampleAndCTRReaderProduceSameResult(t *testing.T) {
+	t.Parallel()
+
+	key := []byte("example key 1234")
+	plaintext := []byte("some plaintext")
+
+	block, err := aes.NewCipher(key)
+	assert.Nil(t, err)
+
+	ciphertext1 := make([]byte, aes.BlockSize+len(plaintext))
+	ciphertext2 := make([]byte, aes.BlockSize+len(plaintext))
+	iv := ciphertext1[:aes.BlockSize]
+	_, err = io.ReadFull(rand.Reader, iv)
+	assert.Nil(t, err)
+
+	stream := cipher.NewCTR(block, iv)
+	stream.XORKeyStream(ciphertext1[aes.BlockSize:], plaintext)
+
+	buffer := bytes.NewBuffer(plaintext)
+	readCloser := ioutil.NopCloser(buffer)
+	ctrReader, err := newCTRReaderWithVector(key, readCloser, iv)
+	assert.Nil(t, err)
+	io.ReadFull(ctrReader, ciphertext2)
+
+	assert.Equal(t, ciphertext1, ciphertext2)
+}
+
 //------------------------------------------------------------------------------
 // Testing assumptions about CTR below this line
 //------------------------------------------------------------------------------
@@ -65,33 +92,6 @@ func TestCTRExample(t *testing.T) {
 	stream.XORKeyStream(plaintext2, ciphertext[aes.BlockSize:])
 
 	assert.Equal(t, plaintext, plaintext2)
-}
-
-func TestCTRExampleAndCTRReaderProduceSameResult(t *testing.T) {
-	t.Parallel()
-
-	key := []byte("example key 1234")
-	plaintext := []byte("some plaintext")
-
-	block, err := aes.NewCipher(key)
-	assert.Nil(t, err)
-
-	ciphertext1 := make([]byte, aes.BlockSize+len(plaintext))
-	ciphertext2 := make([]byte, aes.BlockSize+len(plaintext))
-	iv := ciphertext1[:aes.BlockSize]
-	_, err = io.ReadFull(rand.Reader, iv)
-	assert.Nil(t, err)
-
-	stream := cipher.NewCTR(block, iv)
-	stream.XORKeyStream(ciphertext1[aes.BlockSize:], plaintext)
-
-	buffer := bytes.NewBuffer(plaintext)
-	readCloser := ioutil.NopCloser(buffer)
-	ctrReader, err := newCTRReaderWithVector(key, readCloser, iv)
-	assert.Nil(t, err)
-	io.ReadFull(ctrReader, ciphertext2)
-
-	assert.Equal(t, ciphertext1, ciphertext2)
 }
 
 // I wasn't sure if multiple calls to XORKeyStream where
