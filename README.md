@@ -13,37 +13,35 @@ import (
     "crypto/rand"
     "crypto/rsa"
     "fmt"
+    "github.com/phylake/go-crypto/cipher"
     "github.com/phylake/go-crypto/pki"
 )
 
 func main() {
     // use your own private key
     rsaKey, _ := pki.ParsePrivateKey([]byte(my768BitPrivateKey))
-    
+
     // or generate one
     // rsaKey := generateKey()
 
     privateKey := pki.PrivateKey(*rsaKey)
     publicKey := pki.PublicKey(rsaKey.PublicKey)
 
+    // the key used by AES-256-CBC. not your public key
+    randomSymmetricKey := []byte("my secret 256 bit symmetric key ")
+
+    // encrypt your unencrypted symmetric key with your public key
+    encryptedRandomSymmetricKey, _ := publicKey.EncryptOAEP(randomSymmetricKey)
+
+    // decrypt your encypted symmetric key with your private key
+    randomSymmetricKey2, _ := privateKey.DecryptOAEP(encryptedRandomSymmetricKey)
+    fmt.Println(string(randomSymmetricKey2))
+
     superLargeFile := []byte("super large file contents")
-    encBlock, err := publicKey.EncryptCBC(superLargeFile)
-    if err != nil {
-        panic(err)
-    }
-
-    // a randomly generated key (K) that's been encrypted with your public key
-    // and base64-encoded
-    fmt.Println(encBlock.EncryptedSymmetricKey)
-
-    // your data encrypted using the key K
-    fmt.Println(encBlock.EncryptedBlob)
+    encryptedFile, _ := cipher.EncryptCBC(randomSymmetricKey, superLargeFile)
 
     // decrypt and print the original file
-    superLargeFile2, err := privateKey.DecryptCBC(encBlock)
-    if err != nil {
-        panic(err)
-    }
+    superLargeFile2, _ := cipher.DecryptCBC(randomSymmetricKey, encryptedFile)
 
     fmt.Println(string(superLargeFile2))
 }
