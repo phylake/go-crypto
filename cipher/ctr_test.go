@@ -1,4 +1,4 @@
-package pki
+package cipher
 
 import (
 	"bufio"
@@ -6,6 +6,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"github.com/phylake/go-crypto"
 	"github.com/stretchr/testify/assert"
 	"io"
 	"io/ioutil"
@@ -20,7 +21,7 @@ func Test_CTR_Bijection(t *testing.T) {
 	_, err := io.ReadFull(rand.Reader, plaintext1)
 	assert.Nil(t, err)
 
-	randomKey, err := RandomAES256Key()
+	randomKey, err := crypto.RandomAES256Key()
 	assert.Nil(t, err)
 
 	rBuf := bytes.NewBuffer(plaintext1)

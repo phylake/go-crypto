@@ -1,9 +1,10 @@
-package pki
+package cipher
 
 import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"github.com/phylake/go-crypto"
 )
 
 // NOTE: the padding used here is custom meaning only an equivalent
@@ -24,7 +25,7 @@ func EncryptCBC(symmetricKey []byte, inBytes []byte) ([]byte, error) {
 	inBytes = append(padding, inBytes...)
 	inBytesLen := len(inBytes)
 	if inBytesLen%aes.BlockSize != 0 {
-		return nil, ErrCBCPad
+		return nil, crypto.ErrCBCPad
 	}
 
 	ciphertext := make([]byte, aes.BlockSize+inBytesLen)

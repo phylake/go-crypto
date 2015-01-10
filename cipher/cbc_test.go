@@ -1,8 +1,9 @@
-package pki
+package cipher
 
 import (
 	"crypto/aes"
 	"crypto/rand"
+	"github.com/phylake/go-crypto"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -15,7 +16,7 @@ func Test_CBC_Bijection(t *testing.T) {
 	var blobEnc []byte
 	var err error
 
-	randomKey, err := RandomAES256Key()
+	randomKey, err := crypto.RandomAES256Key()
 	assert.Nil(t, err)
 
 	// NO PADDING

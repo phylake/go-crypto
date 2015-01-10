@@ -1,4 +1,4 @@
-package pki
+package crypto
 
 import (
 	"crypto/aes"

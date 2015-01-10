@@ -1,4 +1,2 @@
 #!/bin/bash
-cd pki
-export GOPATH=$PWD
-go clean && go fmt ./ && go test -v ./
+go clean && go fmt ./... && go test -v ./...
