@@ -33,7 +33,7 @@ func main() {
     // encrypt your unencrypted symmetric key with your public key
     encryptedRandomSymmetricKey, _ := publicKey.EncryptOAEP(randomSymmetricKey)
 
-    // decrypt your encypted symmetric key with your private key
+    // decrypt your encrypted symmetric key with your private key
     randomSymmetricKey2, _ := privateKey.DecryptOAEP(encryptedRandomSymmetricKey)
     fmt.Println(string(randomSymmetricKey2))
 
