@@ -87,7 +87,7 @@ func Test_Go_OAEP_OpenSSL_Combatibility(t *testing.T) {
 	msg := []byte("symmetric key")
 	privateKey := PublicKey(pk.PublicKey)
 
-	encryptedMsg, err := privateKey.EncryptOAEP(msg)
+	encryptedMsg, err := privateKey.Base64EncryptOAEP(msg)
 	assert.Nil(t, err)
 	assert.NotNil(t, encryptedMsg)
 

@@ -53,6 +53,7 @@ func newCTRReaderWithVector(symmetricKey []byte, unencryptedData io.Reader, iv [
 	return ret, nil
 }
 
+// Decrypt p and Write into the underlying io.Writer
 func (recv *ctrWriter) Write(p []byte) (n int, err error) {
 	if recv.stream == nil {
 		if len(p) < aes.BlockSize {
@@ -79,6 +80,7 @@ func (recv *ctrWriter) Write(p []byte) (n int, err error) {
 	return n + n2, nil
 }
 
+// Read from the underlying io.Reader and encrypt the bytes into p
 func (recv *ctrReader) Read(p []byte) (n int, err error) {
 	if recv.iv != nil {
 		if len(p) < aes.BlockSize {

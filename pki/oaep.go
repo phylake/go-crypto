@@ -8,9 +8,8 @@ import (
 )
 
 // Produce a base64-encoded RSA-OAEP compatible with OpenSSL
-func (recv *PublicKey) EncryptOAEP(inBytes []byte) (string, error) {
-	key := rsa.PublicKey(*recv)
-	oaepBytes, err := rsa.EncryptOAEP(sha1.New(), rand.Reader, &key, inBytes, []byte(""))
+func (recv *PublicKey) Base64EncryptOAEP(inBytes []byte) (string, error) {
+	oaepBytes, err := recv.EncryptOAEP(inBytes)
 	if err != nil {
 		return "", err
 	}
@@ -19,17 +18,27 @@ func (recv *PublicKey) EncryptOAEP(inBytes []byte) (string, error) {
 	return outString, nil
 }
 
-func (recv *PrivateKey) DecryptOAEP(inString string) ([]byte, error) {
+// Produce a RSA-OAEP compatible with OpenSSL
+func (recv *PublicKey) EncryptOAEP(inBytes []byte) ([]byte, error) {
+	key := rsa.PublicKey(*recv)
+	return rsa.EncryptOAEP(sha1.New(), rand.Reader, &key, inBytes, []byte(""))
+}
+
+func (recv *PrivateKey) Base64DecryptOAEP(inString string) ([]byte, error) {
 	oaepBytes, err := base64.StdEncoding.DecodeString(inString)
 	if err != nil {
 		return nil, err
 	}
+	
+	return recv.DecryptOAEP(oaepBytes)
+}
 
+func (recv *PrivateKey) DecryptOAEP(oaepBytes []byte) ([]byte, error) {
 	key := rsa.PrivateKey(*recv)
 	outBytes, err := rsa.DecryptOAEP(sha1.New(), rand.Reader, &key, oaepBytes, []byte(""))
 	if err != nil {
 		return nil, err
 	}
 
-	return []byte(outBytes), nil
+	return outBytes, nil
 }
