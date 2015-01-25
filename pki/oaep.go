@@ -29,12 +29,12 @@ func (recv *PrivateKey) Base64DecryptOAEP(inString string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return recv.DecryptOAEP(oaepBytes)
 }
 
 func (recv *PrivateKey) DecryptOAEP(oaepBytes []byte) ([]byte, error) {
-	key := rsa.PrivateKey(*recv)
+	key := rsa.PrivateKey(*recv.key)
 	outBytes, err := rsa.DecryptOAEP(sha1.New(), rand.Reader, &key, oaepBytes, []byte(""))
 	if err != nil {
 		return nil, err

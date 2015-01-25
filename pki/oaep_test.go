@@ -48,8 +48,8 @@ func Test_OAEP_Bijection(t *testing.T) {
 
 	msg := []byte("symmetric key")
 
-	privateKey := PrivateKey(*rsaKey)
-	publicKey := PublicKey(rsaKey.PublicKey)
+	privateKey := NewPrivateKey(*rsaKey)
+	publicKey := privateKey.PublicKey
 
 	encMsg, err := publicKey.EncryptOAEP(msg)
 	assert.Nil(t, err)
@@ -91,7 +91,7 @@ func Test_Go_OAEP_OpenSSL_Combatibility(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, encryptedMsg)
 
-	encryptedMsgFile, err := ioutil.TempFile(tmpDir, "s3fs_")
+	encryptedMsgFile, err := ioutil.TempFile(tmpDir, "go-crypto-")
 	assert.Nil(t, err)
 	defer encryptedMsgFile.Close()
 	defer os.Remove(encryptedMsgFile.Name())
