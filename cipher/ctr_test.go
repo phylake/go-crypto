@@ -1,7 +1,6 @@
 package cipher
 
 import (
-	"bufio"
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
@@ -9,7 +8,6 @@ import (
 	"github.com/phylake/go-crypto"
 	"github.com/stretchr/testify/assert"
 	"io"
-	"io/ioutil"
 	"math"
 	"testing"
 )
@@ -18,24 +16,19 @@ func Test_CTR_Bijection(t *testing.T) {
 	t.Parallel()
 
 	plaintext1 := make([]byte, 123)
+	plaintext2 := make([]byte, 123)
 	_, err := io.ReadFull(rand.Reader, plaintext1)
 	assert.Nil(t, err)
 
 	randomKey, err := crypto.RandomAES256Key()
 	assert.Nil(t, err)
 
-	rBuf := bytes.NewBuffer(plaintext1)
-	ctrReader, err := NewCTRReader(randomKey, rBuf)
-	assert.Nil(t, err)
+	var ciphertext bytes.Buffer
+	ctrWriter := NewCTRWriter(randomKey, &ciphertext)
+	ctrWriter.Write(plaintext1)
 
-	var wBuf bytes.Buffer
-	ctrWriter := NewCTRWriter(randomKey, &wBuf)
-
-	bufioWriter := bufio.NewWriter(ctrWriter)
-	bufioWriter.ReadFrom(ctrReader)
-	bufioWriter.Flush()
-
-	plaintext2 := wBuf.Bytes()
+	ctrReader := NewCTRReader(randomKey, &ciphertext)
+	ctrReader.Read(plaintext2)
 
 	assert.Equal(t, plaintext1, plaintext2)
 }
@@ -50,7 +43,6 @@ func TestCTRExampleAndCTRReaderProduceSameResult(t *testing.T) {
 	assert.Nil(t, err)
 
 	ciphertext1 := make([]byte, aes.BlockSize+len(plaintext))
-	ciphertext2 := make([]byte, aes.BlockSize+len(plaintext))
 	iv := ciphertext1[:aes.BlockSize]
 	_, err = io.ReadFull(rand.Reader, iv)
 	assert.Nil(t, err)
@@ -58,13 +50,11 @@ func TestCTRExampleAndCTRReaderProduceSameResult(t *testing.T) {
 	stream := cipher.NewCTR(block, iv)
 	stream.XORKeyStream(ciphertext1[aes.BlockSize:], plaintext)
 
-	buffer := bytes.NewBuffer(plaintext)
-	readCloser := ioutil.NopCloser(buffer)
-	ctrReader, err := newCTRReaderWithVector(key, readCloser, iv)
+	var ciphertext2 bytes.Buffer
+	ctrWriter := newCTRWriterWithVector(key, &ciphertext2, iv)
+	_, err = ctrWriter.Write(plaintext)
 	assert.Nil(t, err)
-	io.ReadFull(ctrReader, ciphertext2)
-
-	assert.Equal(t, ciphertext1, ciphertext2)
+	assert.Equal(t, ciphertext1, ciphertext2.Bytes())
 }
 
 //------------------------------------------------------------------------------

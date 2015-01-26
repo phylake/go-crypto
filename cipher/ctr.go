@@ -7,96 +7,108 @@ import (
 	"io"
 )
 
-type ctrWriter struct {
+type ctr struct {
 	symmetricKey []byte
 
 	stream cipher.Stream
+}
+
+type ctrWriter struct {
+	ctr
 
 	writer io.Writer
+
+	// only exists for testing
+	iv []byte
 }
 
 type ctrReader struct {
-	iv []byte
-
-	stream cipher.Stream
+	ctr
 
 	reader io.Reader
 }
 
-func NewCTRWriter(symmetricKey []byte, encryptedData io.Writer) io.Writer {
+func NewCTRWriter(symmetricKey []byte, reader io.Writer) io.Writer {
 	ret := &ctrWriter{}
 	ret.symmetricKey = symmetricKey
-	ret.writer = encryptedData
+	ret.writer = reader
 	return ret
 }
 
-func NewCTRReader(symmetricKey []byte, unencryptedData io.Reader) (io.Reader, error) {
-	iv := make([]byte, aes.BlockSize)
-	_, err := io.ReadFull(rand.Reader, iv)
-	if err != nil {
-		return nil, err
-	}
-
-	return newCTRReaderWithVector(symmetricKey, unencryptedData, iv)
-}
-
-func newCTRReaderWithVector(symmetricKey []byte, unencryptedData io.Reader, iv []byte) (io.Reader, error) {
-	block, err := aes.NewCipher(symmetricKey)
-	if err != nil {
-		return nil, err
-	}
-
-	ret := &ctrReader{}
+func newCTRWriterWithVector(symmetricKey []byte, writer io.Writer, iv []byte) io.Writer {
+	ret := &ctrWriter{}
+	ret.symmetricKey = symmetricKey
+	ret.writer = writer
 	ret.iv = iv
-	ret.stream = cipher.NewCTR(block, iv)
-	ret.reader = unencryptedData
-	return ret, nil
+	return ret
 }
 
-// Decrypt p and Write into the underlying io.Writer
-func (recv *ctrWriter) Write(p []byte) (n int, err error) {
+func NewCTRReader(symmetricKey []byte, reader io.Reader) io.Reader {
+	ret := &ctrReader{}
+	ret.symmetricKey = symmetricKey
+	ret.reader = reader
+	return ret
+}
+
+// Read from the underlying io.Reader and decrypt the bytes into p
+func (recv *ctrReader) Read(p []byte) (n int, err error) {
 	if recv.stream == nil {
 		if len(p) < aes.BlockSize {
 			return 0, io.ErrShortBuffer
 		}
 
-		block, err := aes.NewCipher(recv.symmetricKey)
+		iv := make([]byte, aes.BlockSize)
+		n, err = recv.reader.Read(iv)
 		if err != nil {
-			return 0, err
+			return n, err
 		}
 
-		iv := p[:aes.BlockSize]
+		block, err := aes.NewCipher(recv.symmetricKey)
+		if err != nil {
+			return n, err
+		}
+
 		recv.stream = cipher.NewCTR(block, iv)
-		n += aes.BlockSize
 	}
 
-	p2 := make([]byte, len(p)-n)
-	recv.stream.XORKeyStream(p2, p[n:])
-	n2, err := recv.writer.Write(p2)
+	p2 := make([]byte, len(p))
+	n2, err := recv.reader.Read(p2)
 	if err != nil {
-		return n2, err
+		return n + n2, err
 	}
+
+	recv.stream.XORKeyStream(p, p2)
 
 	return n + n2, nil
 }
 
-// Read from the underlying io.Reader and encrypt the bytes into p
-func (recv *ctrReader) Read(p []byte) (n int, err error) {
-	if recv.iv != nil {
-		if len(p) < aes.BlockSize {
-			return 0, io.ErrShortBuffer
+// Encrypt p before writing to the underlying io.Writer
+func (recv *ctrWriter) Write(p []byte) (n int, err error) {
+	if recv.stream == nil {
+		// create initialization vector
+		if recv.iv == nil {
+			recv.iv = make([]byte, aes.BlockSize)
+			_, err := io.ReadFull(rand.Reader, recv.iv)
+			if err != nil {
+				return 0, err
+			}
 		}
-		copy(p, recv.iv)
-		n += aes.BlockSize
-		recv.iv = nil
+
+		// create stream for subsequent Writes
+		block, err := aes.NewCipher(recv.symmetricKey)
+		if err != nil {
+			return 0, err
+		}
+		recv.stream = cipher.NewCTR(block, recv.iv)
+
+		n, err = recv.writer.Write(recv.iv)
+		if err != nil {
+			return n, err
+		}
 	}
 
-	p2 := make([]byte, len(p)-n)
-	n2, err := recv.reader.Read(p2)
-	if err != nil {
-		return n2, err
-	}
-
-	recv.stream.XORKeyStream(p[n:], p2)
-	return n + n2, nil
+	p2 := make([]byte, len(p))
+	recv.stream.XORKeyStream(p2, p)
+	n2, err := recv.writer.Write(p2)
+	return n + n2, err
 }
