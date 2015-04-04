@@ -130,5 +130,5 @@ func Test_Go_OAEP_OpenSSL_Combatibility(t *testing.T) {
 	assert.Equal(t, opensslErr.String(), "")
 
 	// the message encrypted in go can be decrypted in openssl
-	assert.Equal(t, opensslOut.String(), msg)
+	assert.Equal(t, opensslOut.String(), string(msg))
 }
