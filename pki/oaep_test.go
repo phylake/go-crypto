@@ -56,7 +56,7 @@ func Test_OAEP_Bijection(t *testing.T) {
 
 	msg2, err := privateKey.DecryptOAEP(encMsg)
 	assert.Nil(t, err)
-	assert.Equal(t, msg, msg2)
+	assert.Equal(t, msg2, msg)
 }
 
 func Test_Go_OAEP_OpenSSL_Combatibility(t *testing.T) {
@@ -124,11 +124,11 @@ func Test_Go_OAEP_OpenSSL_Combatibility(t *testing.T) {
 	assert.Nil(t, err)
 
 	cmdBase64.Wait()
-	assert.Equal(t, "", base64Err.String())
+	assert.Equal(t, base64Err.String(), "")
 
 	cmdOpenSSL.Wait()
-	assert.Equal(t, "", opensslErr.String())
+	assert.Equal(t, opensslErr.String(), "")
 
 	// the message encrypted in go can be decrypted in openssl
-	assert.Equal(t, msg, opensslOut.String())
+	assert.Equal(t, opensslOut.String(), msg)
 }

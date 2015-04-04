@@ -30,7 +30,7 @@ func Test_CTR_Bijection(t *testing.T) {
 	ctrReader := NewCTRReader(randomKey, &ciphertext)
 	ctrReader.Read(plaintext2)
 
-	assert.Equal(t, plaintext1, plaintext2)
+	assert.Equal(t, plaintext2, plaintext1)
 }
 
 func TestCTRExampleAndCTRReaderProduceSameResult(t *testing.T) {
@@ -54,7 +54,7 @@ func TestCTRExampleAndCTRReaderProduceSameResult(t *testing.T) {
 	ctrWriter := newCTRWriterWithVector(key, &ciphertext2, iv)
 	_, err = ctrWriter.Write(plaintext)
 	assert.Nil(t, err)
-	assert.Equal(t, ciphertext1, ciphertext2.Bytes())
+	assert.Equal(t, ciphertext2.Bytes(), ciphertext1)
 }
 
 //------------------------------------------------------------------------------
@@ -82,7 +82,7 @@ func TestCTRExample(t *testing.T) {
 	stream = cipher.NewCTR(block, iv)
 	stream.XORKeyStream(plaintext2, ciphertext[aes.BlockSize:])
 
-	assert.Equal(t, plaintext, plaintext2)
+	assert.Equal(t, plaintext2, plaintext)
 }
 
 // I wasn't sure if multiple calls to XORKeyStream where
@@ -108,7 +108,7 @@ func TestCTRHandlesMultipleByteSlicesSmallerThanAESBlockSize(t *testing.T) {
 	stream2.XORKeyStream(ciphertext2[aes.BlockSize:aes.BlockSize+mid], plaintext[:mid])
 	stream2.XORKeyStream(ciphertext2[aes.BlockSize+mid:], plaintext[mid:])
 
-	assert.Equal(t, ciphertext1, ciphertext2)
+	assert.Equal(t, ciphertext2, ciphertext1)
 }
 
 // the reason to use CTR instead of CBC is it's stream-based so you don't need
@@ -123,7 +123,7 @@ func TestIncrementalCTR(t *testing.T) {
 
 	blockSngl, _ := aes.NewCipher(key)
 	blockIncr, _ := aes.NewCipher(key)
-	assert.Equal(t, blockIncr, blockSngl)
+	assert.Equal(t, blockSngl, blockIncr)
 
 	ciphertextSngl := make([]byte, aes.BlockSize+len(plainTextSngl))
 	ivSngl := ciphertextSngl[:aes.BlockSize]
@@ -140,7 +140,7 @@ func TestIncrementalCTR(t *testing.T) {
 
 	pLen := float64(len(plainTextIncr))
 	blocks := int(math.Ceil(pLen / float64(aes.BlockSize)))
-	assert.Equal(t, 5, blocks)
+	assert.Equal(t, blocks, 5)
 
 	for i := 0; i < blocks; i++ {
 		beg := int(math.Min(pLen, float64(aes.BlockSize*(i+0))))
@@ -154,7 +154,7 @@ func TestIncrementalCTR(t *testing.T) {
 		ciphertextIncr = append(ciphertextIncr, dst...)
 	}
 
-	assert.Equal(t, ciphertextSngl, ciphertextIncr)
+	assert.Equal(t, ciphertextIncr, ciphertextSngl)
 }
 
 func dup(p []byte) []byte {

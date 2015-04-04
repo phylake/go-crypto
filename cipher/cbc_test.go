@@ -30,7 +30,7 @@ func Test_CBC_Bijection(t *testing.T) {
 	blobOut, err = DecryptCBC(randomKey, blobEnc)
 	assert.Nil(t, err)
 
-	assert.Equal(t, blobIn, blobOut)
+	assert.Equal(t, blobOut, blobIn)
 
 	// SOME PADDING
 	blobIn = make([]byte, 97)
@@ -43,7 +43,7 @@ func Test_CBC_Bijection(t *testing.T) {
 	blobOut, err = DecryptCBC(randomKey, blobEnc)
 	assert.Nil(t, err)
 
-	assert.Equal(t, blobIn, blobOut)
+	assert.Equal(t, blobOut, blobIn)
 
 	// < aes.BlockSize
 	blobIn = make([]byte, aes.BlockSize-2)
@@ -56,5 +56,5 @@ func Test_CBC_Bijection(t *testing.T) {
 	blobOut, err = DecryptCBC(randomKey, blobEnc)
 	assert.Nil(t, err)
 
-	assert.Equal(t, blobIn, blobOut)
+	assert.Equal(t, blobOut, blobIn)
 }
