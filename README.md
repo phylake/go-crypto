@@ -1,4 +1,6 @@
-# go-crypto [![Build Status](https://travis-ci.org/phylake/go-crypto.svg?branch=master)](https://travis-ci.org/phylake/go-crypto)
+[![Build Status](https://travis-ci.org/phylake/go-crypto.svg?branch=master)](https://travis-ci.org/phylake/go-crypto) [![godoc reference](https://godoc.org/github.com/phylake/go-crypto?status.png)](https://godoc.org/github.com/phylake/go-crypto)
+
+# go-crypto
 
 Go utilities for common cryptography tasks
 
