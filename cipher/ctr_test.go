@@ -8,29 +8,80 @@ import (
 	"github.com/phylake/go-crypto"
 	"github.com/stretchr/testify/assert"
 	"io"
+	"io/ioutil"
 	"math"
 	"testing"
 )
 
-func Test_CTR_Bijection(t *testing.T) {
+func Test_CTR_Bijection_Random_Bits(t *testing.T) {
 	t.Parallel()
 
-	plaintext1 := make([]byte, 123)
-	plaintext2 := make([]byte, 123)
-	_, err := io.ReadFull(rand.Reader, plaintext1)
+	plaintextIn := make([]byte, 123)
+	_, err := io.ReadFull(rand.Reader, plaintextIn)
 	assert.Nil(t, err)
+
+	plaintextOut := make([]byte, 123)
+	assert.NotEqual(t, plaintextOut, plaintextIn)
 
 	randomKey, err := crypto.RandomAES256Key()
 	assert.Nil(t, err)
 
 	var ciphertext bytes.Buffer
 	ctrWriter := NewCTRWriter(randomKey, &ciphertext)
-	ctrWriter.Write(plaintext1)
+	ctrWriter.Write(plaintextIn)
 
 	ctrReader := NewCTRReader(randomKey, &ciphertext)
-	ctrReader.Read(plaintext2)
+	ctrReader.Read(plaintextOut)
 
-	assert.Equal(t, plaintext2, plaintext1)
+	assert.Equal(t, plaintextOut, plaintextIn)
+}
+
+func Test_CTR_Bijection_Short_Key(t *testing.T) {
+	t.Parallel()
+
+	plaintextIn := make([]byte, 123)
+	_, err := io.ReadFull(rand.Reader, plaintextIn)
+	assert.Nil(t, err)
+
+	plaintextOut := make([]byte, 123)
+	assert.NotEqual(t, plaintextOut, plaintextIn)
+
+	key := []byte("example key 1234")
+
+	var ciphertext bytes.Buffer
+	ctrWriter := NewCTRWriter(key, &ciphertext)
+	ctrWriter.Write(plaintextIn)
+
+	ctrReader := NewCTRReader(key, &ciphertext)
+	ctrReader.Read(plaintextOut)
+
+	assert.Equal(t, plaintextOut, plaintextIn)
+}
+
+func Test_CTR_Bijection_Multiple_Writes_And_ReadAll(t *testing.T) {
+	t.Parallel()
+
+	plaintextIn1 := make([]byte, 50)
+	plaintextIn2 := make([]byte, 50)
+	_, err := io.ReadFull(rand.Reader, plaintextIn1)
+	assert.Nil(t, err)
+	_, err = io.ReadFull(rand.Reader, plaintextIn2)
+	assert.Nil(t, err)
+
+	key := []byte("example key 1234")
+
+	var ciphertext bytes.Buffer
+	ctrWriter := NewCTRWriter(key, &ciphertext)
+	ctrWriter.Write(plaintextIn1)
+	ctrWriter.Write(plaintextIn2)
+
+	ctrReader := NewCTRReader(key, &ciphertext)
+
+	plaintextOut, err := ioutil.ReadAll(ctrReader)
+	assert.Nil(t, err)
+
+	plaintextIn := append(plaintextIn1, plaintextIn2...)
+	assert.Equal(t, plaintextOut, plaintextIn)
 }
 
 func TestCTRExampleAndCTRReaderProduceSameResult(t *testing.T) {

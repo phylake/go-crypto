@@ -74,12 +74,12 @@ func (recv *ctrReader) Read(p []byte) (n int, err error) {
 	p2 := make([]byte, len(p))
 	n2, err := recv.reader.Read(p2)
 	if err != nil {
-		return n + n2, err
+		return n2, err
 	}
 
 	recv.stream.XORKeyStream(p, p2)
 
-	return n + n2, nil
+	return n2, nil
 }
 
 // Encrypt p before writing to the underlying io.Writer
@@ -109,6 +109,6 @@ func (recv *ctrWriter) Write(p []byte) (n int, err error) {
 
 	p2 := make([]byte, len(p))
 	recv.stream.XORKeyStream(p2, p)
-	n2, err := recv.writer.Write(p2)
-	return n + n2, err
+	n, err = recv.writer.Write(p2)
+	return n, err
 }
