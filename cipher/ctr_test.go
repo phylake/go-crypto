@@ -30,7 +30,9 @@ func Test_CTR_Bijection_Random_Bits(t *testing.T) {
 	ctrWriter := NewCTRWriter(randomKey, &ciphertext)
 	ctrWriter.Write(plaintextIn)
 
-	ctrReader := NewCTRReader(randomKey, &ciphertext)
+	ctrReader, err := NewCTRReader(randomKey, &ciphertext)
+	assert.Nil(t, err)
+
 	ctrReader.Read(plaintextOut)
 
 	assert.Equal(t, plaintextOut, plaintextIn)
@@ -52,7 +54,9 @@ func Test_CTR_Bijection_Short_Key(t *testing.T) {
 	ctrWriter := NewCTRWriter(key, &ciphertext)
 	ctrWriter.Write(plaintextIn)
 
-	ctrReader := NewCTRReader(key, &ciphertext)
+	ctrReader, err := NewCTRReader(key, &ciphertext)
+	assert.Nil(t, err)
+
 	ctrReader.Read(plaintextOut)
 
 	assert.Equal(t, plaintextOut, plaintextIn)
@@ -75,7 +79,8 @@ func Test_CTR_Bijection_Multiple_Writes_And_ReadAll(t *testing.T) {
 	ctrWriter.Write(plaintextIn1)
 	ctrWriter.Write(plaintextIn2)
 
-	ctrReader := NewCTRReader(key, &ciphertext)
+	ctrReader, err := NewCTRReader(key, &ciphertext)
+	assert.Nil(t, err)
 
 	plaintextOut, err := ioutil.ReadAll(ctrReader)
 	assert.Nil(t, err)
