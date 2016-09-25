@@ -39,7 +39,7 @@ func (recv *ctrWriter) Write(p []byte) (n int, err error) {
 		// create initialization vector
 		if recv.iv == nil {
 			recv.iv = make([]byte, aes.BlockSize)
-			_, err = io.ReadFull(rand.Reader, recv.iv)
+			_, err = rand.Read(recv.iv)
 			if err != nil {
 				return
 			}

@@ -7,7 +7,6 @@ import (
 	"crypto/rand"
 	"github.com/phylake/go-crypto"
 	"github.com/stretchr/testify/assert"
-	"io"
 	"io/ioutil"
 	"math"
 	"testing"
@@ -17,7 +16,7 @@ func Test_CTR_Bijection_Random_Bits(t *testing.T) {
 	t.Parallel()
 
 	plaintextIn := make([]byte, 123)
-	_, err := io.ReadFull(rand.Reader, plaintextIn)
+	_, err := rand.Read(plaintextIn)
 	assert.Nil(t, err)
 
 	plaintextOut := make([]byte, 123)
@@ -42,7 +41,7 @@ func Test_CTR_Bijection_Short_Key(t *testing.T) {
 	t.Parallel()
 
 	plaintextIn := make([]byte, 123)
-	_, err := io.ReadFull(rand.Reader, plaintextIn)
+	_, err := rand.Read(plaintextIn)
 	assert.Nil(t, err)
 
 	plaintextOut := make([]byte, 123)
@@ -67,9 +66,9 @@ func Test_CTR_Bijection_Multiple_Writes_And_ReadAll(t *testing.T) {
 
 	plaintextIn1 := make([]byte, 50)
 	plaintextIn2 := make([]byte, 50)
-	_, err := io.ReadFull(rand.Reader, plaintextIn1)
+	_, err := rand.Read(plaintextIn1)
 	assert.Nil(t, err)
-	_, err = io.ReadFull(rand.Reader, plaintextIn2)
+	_, err = rand.Read(plaintextIn2)
 	assert.Nil(t, err)
 
 	key := []byte("example key 1234")
@@ -100,7 +99,7 @@ func TestCTRExampleAndCTRReaderProduceSameResult(t *testing.T) {
 
 	ciphertext1 := make([]byte, aes.BlockSize+len(plaintext))
 	iv := ciphertext1[:aes.BlockSize]
-	_, err = io.ReadFull(rand.Reader, iv)
+	_, err = rand.Read(iv)
 	assert.Nil(t, err)
 
 	stream := cipher.NewCTR(block, iv)
@@ -128,7 +127,7 @@ func TestCTRExample(t *testing.T) {
 
 	ciphertext := make([]byte, aes.BlockSize+len(plaintext))
 	iv := ciphertext[:aes.BlockSize]
-	_, err = io.ReadFull(rand.Reader, iv)
+	_, err = rand.Read(iv)
 	assert.Nil(t, err)
 
 	stream := cipher.NewCTR(block, iv)
@@ -153,7 +152,7 @@ func TestCTRHandlesMultipleByteSlicesSmallerThanAESBlockSize(t *testing.T) {
 
 	ciphertext1 := make([]byte, aes.BlockSize+len(plaintext))
 	iv := ciphertext1[:aes.BlockSize]
-	io.ReadFull(rand.Reader, iv)
+	rand.Read(iv)
 	ciphertext2 := dup(ciphertext1)
 
 	stream1 := cipher.NewCTR(block, iv)
@@ -183,7 +182,7 @@ func TestIncrementalCTR(t *testing.T) {
 
 	ciphertextSngl := make([]byte, aes.BlockSize+len(plainTextSngl))
 	ivSngl := ciphertextSngl[:aes.BlockSize]
-	io.ReadFull(rand.Reader, ivSngl)
+	rand.Read(ivSngl)
 	ivIncr := dup(ivSngl)
 
 	streamSngl := cipher.NewCTR(blockSngl, ivSngl)
